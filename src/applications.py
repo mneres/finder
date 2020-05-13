@@ -1,9 +1,5 @@
 import re
 import os
-import json
-import collections
-
-from util import Util
 
 class Applications():
     def __init__(self):
@@ -51,7 +47,7 @@ class Applications():
             return
 
         self.applications[main['name']] = main
-    
+
     def generate_apps_file(self):
         self.applications = {}
         for _, __, files in os.walk(self.APP_FOLDER):
@@ -61,17 +57,10 @@ class Applications():
                         self.searchFiles(file) 
                 except:
                     print("An exception occurred", filename)
-
-        with open(Util.get_path(self, 'apps.json'), 'w') as outfile:
-            od = collections.OrderedDict(sorted(self.applications.items()))
-            json.dump(od, outfile)
     
     def filter_apps(self, text):
         result = {}
-        file_path = Util.get_path(self, 'apps.json')
-        with open(file_path) as json_file:
-            data = json.load(json_file)
-            for app in data:
-                if app.lower().find(text.lower()) > -1:
-                    result[data[app]['name']] = data[app]
+        for app in self.applications:
+            if app.lower().find(text.lower()) > -1:
+                result[app] = self.applications[app]
         return result
