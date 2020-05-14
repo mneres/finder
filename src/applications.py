@@ -39,13 +39,17 @@ class Applications():
 
             if(isMainAdded == False):
                 main = self.getProperties(content)
+
+                if (main['icon']) == 0:
+                    main = None
+
                 main['subs'] = []
                 isMainAdded = True
                 continue
 
             main['subs'].append(self.getProperties(content))
         
-        if len(main['name']) == 0 or len(main['exec']) == 0:
+        if len(main['name']) == 0 or len(main['exec']) == 0 or main == None:
             return
 
         self.applications[main['name']] = main
