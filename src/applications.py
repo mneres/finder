@@ -19,6 +19,8 @@ class Applications():
         return newStr[:end].strip()
 
     def getProperties(self, content):
+        content = content.replace(' = ', '=')
+
         name = self.findValue(self.NAME_VAR, content)
         exec = self.findValue(self.EXEC_VAR, content)
         icon = self.findValue(self.ICON_VAR, content)
@@ -50,7 +52,7 @@ class Applications():
 
     def generate_apps_file(self):
         self.applications = {}
-        for _, __, files in os.walk(self.APP_FOLDER):
+        for _, _, files in os.walk(self.APP_FOLDER):
             for filename in files:
                 try:
                     with open(self.APP_FOLDER + filename) as file:
