@@ -38,29 +38,38 @@ class Main():
         search_entry = self.builder.get_object('Search')
         search_entry.modify_font(Pango.FontDescription('Tahoma 25'))
 
+        # Populate apps
+        self.result = self.applications.filter_apps('')
+        self.treeview.add_new(self.result)
+
         self.window.show_all()
+
+        self.folder_frame = self.builder.get_object('FolderFrame')
+        self.folder_frame.hide()
     
     def on_search(self, element):
         search_text = element.get_text()
 
+        self.result = self.applications.filter_apps(search_text)
+        self.display_app_search()
+
         if (search_text == ''):
-            self.treeview.clear()
             self.folders_treeview.clear()
+            self.folder_frame.hide()
             return
 
-        self.window.set_size_request(600, 400)
-
-        self.result = self.applications.filter_apps(search_text)
         self.folders_result = self.folders.filter_folders(search_text)
+        self.display_folder_search()
 
-        self.display_search()
-
-    def display_search(self):
+    def display_app_search(self):
         self.treeview.clear()
         self.treeview.add_new(self.result)
 
+    def display_folder_search(self):
         self.folders_treeview.clear()
         self.folders_treeview.add_new(self.folders_result)
+
+        self.window.show_all()
 
     def open(self, app_name):
         app = self.result[app_name]
