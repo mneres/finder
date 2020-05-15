@@ -1,10 +1,23 @@
+import os
 from gi.repository import Gtk, GdkPixbuf
+
+from util import Util
 
 class Treeview():
     def __init__(self, parent, callback_open):
 
         self.callback_open = callback_open
 
+        # Column Types
+        self.TEXT_COLUMN = 'text'
+        self.ICON_COLUMN = 'pixbuf'
+
+        # Icons
+        self.ICON_THEME = Gtk.IconTheme.get_default()
+        self.DEFAULT_ICON = Util.get_path(self, 'assets/system-search-symbolic.svg')
+        self.ICON_SIZE_WIDTH = 40
+        self.ICON_SIZE_HEIGHT = 40
+        
         self.liststore = Gtk.ListStore(str, str)
         # self.liststore = Gtk.ListStore(str)
         self.treeview = Gtk.TreeView(model=self.liststore)
@@ -29,8 +42,11 @@ class Treeview():
         parent.add(self.treeview)
 
     def get_tree_cell_text(self, col, cell, model, iter, user_data):
-        cell.set_property('text', model.get_value(iter, 1))
-        # cell.set_property('text', model.get_value(iter, 0))
+        cell.set_property(self.TEXT_COLUMN, model.get_value(iter, 1))
+
+    def use_default_icon(self, cell):
+        cell.set_property(self.ICON_COLUMN, GdkPixbuf.Pixbuf.new_from_file_at_scale(self.DEFAULT_ICON,
+            width=self.ICON_SIZE_WIDTH, height=self.ICON_SIZE_HEIGHT, preserve_aspect_ratio=False))
 
     def get_tree_cell_pixbuf(self, col, cell, model, iter, user_data):
         icon = str(model.get_value(iter, 0))
@@ -38,10 +54,31 @@ class Treeview():
             return
 
         if icon.__contains__('/'):
-            cell.set_property('pixbuf', GdkPixbuf.Pixbuf.new_from_file_at_scale(model.get_value(iter, 0),
-                width=40, height=40, preserve_aspect_ratio=False))
-        else:    
-            cell.set_property('pixbuf', Gtk.IconTheme.get_default().load_icon(icon, 40, 0))
+            if not os.path.isfile(icon):
+                # Use default
+                self.use_default_icon(cell)
+                return
+
+            # If icon is a path open it from file
+            cell.set_property(self.ICON_COLUMN, GdkPixbuf.Pixbuf.new_from_file_at_scale(icon,
+                width=self.ICON_SIZE_WIDTH, height=self.ICON_SIZE_HEIGHT, preserve_aspect_ratio=False))
+            return
+        else:
+            # Look for icon by name
+            lookup = self.ICON_THEME.lookup_icon(icon, 0, 0)
+            if lookup == None:
+                # Use default
+                self.use_default_icon(cell)
+                return
+            
+            icon_path = lookup.get_filename()
+            if not os.path.isfile(icon_path):
+                # Use default
+                self.use_default_icon(cell)
+                return
+
+            cell.set_property(self.ICON_COLUMN, GdkPixbuf.Pixbuf.new_from_file_at_scale(icon_path,
+                width=self.ICON_SIZE_WIDTH, height=self.ICON_SIZE_HEIGHT, preserve_aspect_ratio=False))
 
     def add_new(self, items):
         for item in items:
