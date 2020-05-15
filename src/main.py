@@ -3,7 +3,7 @@ from subprocess import Popen
 
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Pango
+from gi.repository import Gtk, Gdk, Pango
 
 from applications import Applications
 from folders import Folders
@@ -35,8 +35,8 @@ class Main():
         folders_display.set_vexpand(True)
         self.folders_treeview = FoldersTreeview(folders_display, self.open_folder)
 
-        search_entry = self.builder.get_object('Search')
-        search_entry.modify_font(Pango.FontDescription('Tahoma 25'))
+        self.search_entry = self.builder.get_object('Search')
+        self.search_entry.modify_font(Pango.FontDescription('Tahoma 25'))
 
         # Populate apps
         self.result = self.applications.filter_apps('')
@@ -46,6 +46,22 @@ class Main():
 
         self.folder_frame = self.builder.get_object('FolderFrame')
         self.folder_frame.hide()
+
+    def on_key_press(self, widget, event):
+        keyname = Gdk.keyval_name(event.keyval)
+        if keyname == 'Escape':
+            Gtk.Window.close(self.window)
+            return False
+        
+        if keyname == 'Up' \
+            or keyname == 'Down' \
+            or keyname == 'Return' :
+            return False
+        else:
+            if not self.search_entry.is_focus():
+                self.search_entry.grab_focus()
+        return False        
+
     
     def on_search(self, element):
         search_text = element.get_text()
